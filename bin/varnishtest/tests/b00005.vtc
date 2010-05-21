@@ -1,0 +1,21 @@
+# $Id: b00005.vtc 3052 2008-08-01 08:24:23Z phk $
+
+test "Check that -s works"
+
+server s1 {
+	rxreq 
+	txresp -hdr "Connection: close" -body "012345\n"
+} -start
+
+varnish v1 -arg "-s file,varnishtest_backing,10M" -vcl+backend {}  -start
+
+client c1 {
+	txreq -url "/"
+	rxresp
+	expect resp.status == 200
+} -run
+
+server s1 -wait
+
+varnish v1 -stop
+shell "rm ../varnishd/varnishtest_backing"

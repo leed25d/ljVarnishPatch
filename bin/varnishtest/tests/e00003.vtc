@@ -1,0 +1,40 @@
+# $Id: e00003.vtc 4673 2010-04-19 10:41:52Z tfheen $
+
+test "ESI include"
+
+
+server s1 {
+	rxreq 
+	txresp -body {
+		<html>
+		Before include
+		<esi:include src="/body"/>
+		After include
+	}
+	rxreq 
+	expect req.url == "/body"
+	txresp -body {
+		Included file
+	}
+} -start
+
+varnish v1 -vcl+backend {
+	sub vcl_fetch {
+		esi;
+	}
+} -start
+
+client c1 {
+	txreq 
+	rxresp
+	expect resp.bodylen == 65
+	expect resp.status == 200
+	# test that there is no difference on miss/hit
+	txreq 
+	rxresp
+	expect resp.bodylen == 65
+	expect resp.status == 200
+}
+
+client c1 -run
+varnish v1 -expect esi_errors == 0

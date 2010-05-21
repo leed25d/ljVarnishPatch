@@ -1,0 +1,20 @@
+# $Id: b00009.vtc 4484 2010-01-25 19:00:23Z phk $
+
+test "Check poll acceptor"
+
+server s1 {
+	rxreq 
+	txresp -hdr "Connection: close" -body "012345\n"
+} -start
+
+varnish v1 -arg "-p waiter=poll" -vcl+backend {} -start
+
+client c1 {
+	txreq -url "/"
+	rxresp
+	expect resp.status == 200
+	delay .1
+	txreq -url "/"
+	rxresp
+	expect resp.status == 200
+} -run

@@ -1,0 +1,23 @@
+# $Id: r00326.vtc 3300 2008-10-15 09:52:15Z tfheen $
+
+test "No zerolength verbatim before <esi:include...>"
+
+server s1 {
+	rxreq 
+	txresp -body {<esi:include src="/foo"/><esi:include src="/foo"/>}
+	rxreq 
+	txresp -body "FOO\n"
+} -start
+
+varnish v1 -vcl+backend {
+	sub vcl_fetch {
+		esi;
+	}
+} -start
+
+client c1 {
+	txreq 
+	rxresp
+	expect resp.status == 200
+	expect resp.bodylen == 8
+} -run

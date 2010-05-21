@@ -1,0 +1,23 @@
+# $Id: a00010.vtc 4365 2009-11-24 19:41:09Z phk $
+
+test "simply test that the framework support \0"
+
+server s1 {
+        rxreq
+	expect req.url == "/"
+	txresp -body {a\0bc}
+} 
+
+server s1 -start 
+
+client c1 -connect ${s1_sock} {
+
+	txreq
+	rxresp
+	expect resp.bodylen == 4
+} 
+
+client c1 -run
+
+server s1 -wait
+

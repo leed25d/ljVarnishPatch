@@ -1,0 +1,5 @@
+# $Id: a00009.vtc 4485 2010-01-25 19:44:57Z phk $
+
+test "See that the VCL compiler works"
+
+shell "cd ../varnishd && ./varnishd -b 127.0.0.1:80 -C -n ${tmpdir} > /dev/null"

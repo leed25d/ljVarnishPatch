@@ -1,0 +1,22 @@
+# $Id: r00318.vtc 4612 2010-03-16 09:10:19Z phk $
+
+test "ESI with no body in response"
+
+server s1 {
+	rxreq 
+	txresp -status 302
+} -start
+
+varnish v1 -vcl+backend {
+	sub vcl_fetch {
+		esi;
+		return(pass);
+	}
+} -start
+
+client c1 {
+	txreq 
+	rxresp
+	expect resp.status == 302
+} -run
+

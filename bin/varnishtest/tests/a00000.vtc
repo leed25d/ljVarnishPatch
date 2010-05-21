@@ -1,0 +1,19 @@
+# $Id: a00000.vtc 4365 2009-11-24 19:41:09Z phk $
+
+test "basic default HTTP transactions"
+
+server s1 {
+	rxreq
+	txresp 
+}
+
+server s1 -start 
+
+client c1 -connect ${s1_sock} {
+	txreq 
+	rxresp
+}
+
+client c1 -run
+
+server s1 -wait

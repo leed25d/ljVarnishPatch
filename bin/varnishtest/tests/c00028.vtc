@@ -1,0 +1,23 @@
+# $Id: c00028.vtc 4554 2010-02-12 11:25:46Z phk $
+
+test "Test that we can't recurse restarts forever"
+
+varnish v1 -vcl { 
+	backend bad { 
+		.host = "${bad_ip}"; .port = "9090";
+	}
+
+	sub vcl_recv {
+	    set req.backend = bad;
+	}
+	sub vcl_error { 
+	    restart; 
+	}
+ } -start 
+
+client c1 {
+        txreq -url "/"
+        rxresp
+        expect resp.status == 503
+} -run
+
