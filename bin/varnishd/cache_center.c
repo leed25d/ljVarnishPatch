@@ -494,13 +494,16 @@ cnt_fetch(struct sess *sp)
 	sp->wrk->do_esi = 0;
 	sp->wrk->grace = NAN;
 
-        /*  LEE:: this is where the vcl_fetch routine is called.  construct
-            the X-LJ-SMASHCOOKIE:  header here  */
-        
+        /*  LEE:: this is where the vcl_fetch routine is called.
+         *  construct the X-LJ-SMASHCOOKIE: header here
+         */
+
 	VCL_fetch_method(sp);
 
-        /*  LEE:: before doing anything else, delete the  X-LJ-COOKIE: header  */
-        
+        /*  LEE:: before doing anything else, delete the X-LJ-COOKIE:
+         *  header
+         */
+
 
 	/*
 	 * When we fetch the body, we may hit the LRU cleanup and that
