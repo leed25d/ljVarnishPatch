@@ -92,7 +92,7 @@ LJ_collectSetCookies(struct http *hp)
 }
 
 static void
-LJ_removeSmashed(char *cp)
+LJ_removeSmashedCookie(char *cp)
 {
         VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed");
         if (cp) {
