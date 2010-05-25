@@ -498,11 +498,13 @@ cnt_fetch(struct sess *sp)
          *  construct the X-LJ-SMASHCOOKIE: header here
          */
 
+        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE:");
 	VCL_fetch_method(sp);
 
         /*  LEE:: before doing anything else, delete the X-LJ-COOKIE:
          *  header
          */
+        VSL(SLT_Debug, 0, "Remove X-LJ-SMASHCOOKIE:");
 
 
 	/*
