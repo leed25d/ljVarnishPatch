@@ -82,6 +82,24 @@ SVNID("$Id: cache_center.c 4708 2010-04-21 10:36:12Z tfheen $")
 
 static unsigned xids;
 
+/*------------------------------------------------------------------*/
+static char *
+LJ_collectSetCookies(struct http *hp)
+{
+        char *str= strdup("Test Smash cookie string");
+        VSL(SLT_Debug, 0, "Entry: LJ_collectSetCookies");
+        return(str);
+}
+
+static void
+LJ_removeSmashed(char *cp)
+{
+        VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed");
+        if (cp) {
+                free(cp);
+        }
+}
+
 /*--------------------------------------------------------------------
  * WAIT
  * Wait (briefly) until we have a full request in our htc.
@@ -422,7 +440,7 @@ cnt_fetch(struct sess *sp)
 {
 	int i;
 	struct http *hp, *hp2;
-	char *b;
+	char *b, *ljp;
 	unsigned handling, l, nhttp;
 	int varyl = 0;
 	struct vsb *vary = NULL;
@@ -497,13 +515,18 @@ cnt_fetch(struct sess *sp)
         /*  LEE:: this is where the vcl_fetch routine is called.
          *  construct the X-LJ-SMASHCOOKIE: header here
          */
-
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE:");
+        ljp= LJ_collectSetCookies(sp->wrk->beresp);
+        if (ljp) {
+                VSL(SLT_Debug, 0, "X-LJ-SMASHCOOKIE string= '%s'", ljp);
+        }
+        
 	VCL_fetch_method(sp);
 
         /*  LEE:: before doing anything else, delete the X-LJ-COOKIE:
          *  header
          */
+        LJ_removeSmashedCookie(ljp);
         VSL(SLT_Debug, 0, "Remove X-LJ-SMASHCOOKIE:");
 
 
