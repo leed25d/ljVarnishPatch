@@ -118,18 +118,28 @@ LJ_collectSetCookies(struct http *hp)
                 wpe = strchr(wp, '\0');
                 if (!wpe || (wpe <= wp))
                         continue;
-                
-                ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
+
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: sp='%s'", sp);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: c= %d, wp='%s'", strlen(wp), wp);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: wpe-wp= %d", (wpe-wp));
+               
+                ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? 2 : 0);
                 if ((sp= realloc(sp, ct)) == NULL)
                          continue;
                 
                 sprintf(sp, "%s%s%s", sp, strlen(sp) ? "%%" : "", wp);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: after concat sp='%s'", sp);
 	}
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: before return '%s'", sp);
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
-                if ((sp= realloc(sp, ct)) != NULL) {
-                        sprintf(sp, "%s%s", cHd, sp);   
+                if ((wp= malloc(ct)) != NULL) {
+                        sprintf(wp, "%s%s", cHd, sp);
+                        free(sp);
+                        sp= wp;
+                } else {
+                        free(sp);
+                        sp= NULL;
                 }
         }
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return '%s'", sp);
