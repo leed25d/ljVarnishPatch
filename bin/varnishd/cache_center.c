@@ -89,6 +89,7 @@ LJ_collectSetCookies(struct http *hp)
 {
         char *sp= malloc(10), *wp, *wpe, *sep;
         char *sc= "Set-Cookie";
+        char *cHd= "X-LJ-SMASHCOOKIE: ";
 
         unsigned u, ct;
         unsigned l= strlen(sc);
@@ -112,27 +113,32 @@ LJ_collectSetCookies(struct http *hp)
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, l=%d, sc= '%s', hdr= '%s'", u, l, sc, hp->hd[u].b);
                 wp= hp->hd[u].b + l + 1;
                 
-                /**  skip over whitespace  **/
                 while (vct_issp(*wp))
                         wp++;
                 wpe = strchr(wp, '\0');
                 if (!wpe || (wpe <= wp))
                         continue;
+                
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
                 if ((sp= realloc(sp, ct)) == NULL)
                          continue;
                 
-                sep= strlen(sp) ? "%%" : "";
-                sprintf(sp, "%s%s%s", sp, sep, wp);
+                sprintf(sp, "%s%s%s", sp, strlen(sp) ? "%%" : "", wp);
 	}
-        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return.  sp= '%s'", sp);
+        if (sp && strlen(sp)) {
+                ct= strlen(sp) + strlen(cHd) + 1;
+                if ((sp= realloc(sp, ct)) != NULL) {
+                        sprintf(sp, "%s%s", cHd, sp);   
+                }
+        }
         return(sp);
 }
 
 static void
-LJ_removeSmashedCookie(char *cp)
+LJ_removeSmashedCookie(struct http *hp, char *cp)
 {
         VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed");
+        http_Unset(hp, "\x11X-LJ-SMASHCOOKIE:");
         if (cp) {
                 free(cp);
         }
@@ -557,8 +563,9 @@ cnt_fetch(struct sess *sp)
          */
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE:");
         ljp= LJ_collectSetCookies(sp->wrk->beresp);
-        if (ljp) {
+        if (ljp && strlen(ljp)) {
                 VSL(SLT_Debug, 0, "X-LJ-SMASHCOOKIE string= '%s'", ljp);
+                http_SetHeader(sp->wrk, sp->fd, sp->wrk->beresp, ljp);
         }
 
 	VCL_fetch_method(sp);
@@ -566,7 +573,7 @@ cnt_fetch(struct sess *sp)
         /*  LEE:: before doing anything else, delete the X-LJ-COOKIE:
          *  header
          */
-        LJ_removeSmashedCookie(ljp);
+        LJ_removeSmashedCookie(sp->wrk->beresp, ljp);
         VSL(SLT_Debug, 0, "Remove X-LJ-SMASHCOOKIE:");
         /*                  END LJ HACK                               */
         /**************************************************************/
