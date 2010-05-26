@@ -87,71 +87,43 @@ static unsigned xids;
 static char *
 LJ_collectSetCookies(struct http *hp)
 {
-        char *sp= malloc(10), *wp, *wpe;
+        char *sp= malloc(10), *wp, *wpe, *sep;
         char *sc= "Set-Cookie";
 
         unsigned u, ct;
         unsigned l= strlen(sc);
 
         if (!sp) {
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: ERRORED OUT:  NULL POINTER");
                 return(sp);
         }
         strcpy(sp, "");
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: u= %d", u);
-		if (hp->hd[u].b == NULL) {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0)");
+		if (hp->hd[u].b == NULL)
 			continue;
-                }
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0.5)");
 		Tcheck(hp->hd[u]);
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0.75)");
-		if (hp->hd[u].e < hp->hd[u].b + l + 1) {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1)");
+		if (hp->hd[u].e < hp->hd[u].b + l + 1)
 			continue;
-                }
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1.5)");
-		if (hp->hd[u].b[l] != ':') {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2) l=%d, h= %s", l, hp->hd[u].b);
+		if (hp->hd[u].b[l] != ':')
 			continue;
-                }
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: l=%d sc= '%s' hdr= '%s'", l, sc, hp->hd[u].b);
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
 		/**   we have a hit **/
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT");
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, l=%d, sc= '%s', hdr= '%s'", u, l, sc, hp->hd[u].b);
                 wp= hp->hd[u].b + l + 1;
-                
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wp= %s", wp);
                 
                 /**  skip over whitespace  **/
                 while (vct_issp(*wp))
                         wp++;
                 wpe = strchr(wp, '\0');
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe set wpe= %d", !!wpe);
-
-                if (!wpe || (wpe <= wp)) {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe fucked!");
+                if (!wpe || (wpe <= wp))
                         continue;
-                }
-
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe checked sp= %d", !!sp);
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
-
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT ct= %d", ct);
-                if ((sp= realloc(sp, ct)) == NULL) {
-                         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: realloc returns a NULL pointer");
+                if ((sp= realloc(sp, ct)) == NULL)
                          continue;
-                }
-
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT sp reallocated. r= %d", !!sp );
-                sprintf(sp, "%s%s", sp, wp);
-
-
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT sp= '%s'", sp);
-                continue;
+                
+                sep= strlen(sp) ? "%%" : "";
+                sprintf(sp, "%s%s%s", sp, sep, wp);
 	}
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return.  sp= '%s'", sp);
         return(sp);
