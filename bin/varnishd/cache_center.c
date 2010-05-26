@@ -93,11 +93,11 @@ LJ_collectSetCookies(struct http *hp)
         unsigned u, ct;
         unsigned l= strlen(sc);
 
-        sp= sp ? "" : sp;
         if (!sp) {
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: ERRORED OUT:  NULL POINTER");
                 return(sp);
         }
+        strcpy(sp, "");
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: u= %d", u);
@@ -141,7 +141,10 @@ LJ_collectSetCookies(struct http *hp)
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
 
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT ct= %d", ct);
-                sp= realloc(sp, ct);
+                if ((sp= realloc(sp, ct)) == NULL) {
+                         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: realloc returns a NULL pointer");
+                         continue;
+                }
 
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT sp reallocated. r= %d", !!sp );
                 sprintf(sp, "%s%s", sp, wp);
