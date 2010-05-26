@@ -131,9 +131,11 @@ LJ_collectSetCookies(struct http *hp)
 
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe checked ");
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
-                sp= realloc(sp, ct);
 
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT ct= %d", ct);
+                sp= realloc(sp, ct);
+
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT sp reallocated. r= %d", !!sp );
                 sprintf(sp, "%s%s", sp, wp);
 
 
