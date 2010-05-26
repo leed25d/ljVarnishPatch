@@ -98,14 +98,15 @@ LJ_collectSetCookies(struct http *hp)
 		if (hp->hd[u].b == NULL)
 			continue;
 		Tcheck(hp->hd[u]);
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: hdr= %s", hp->hd[u].b);
 		if (hp->hd[u].e < hp->hd[u].b + l + 1)
 			continue;
 		if (hp->hd[u].b[l] != ':')
 			continue;
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: \nl=%d\nsc= '%s'\nhdr= '%s'", l, sc, hp->hd[u].b);
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
 		/**   we have a hit **/
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT");
                 wp= hp->hd[u].b + l + 1;
                 /**  skip over whitespace  **/
                 while (vct_issp(*wp))
@@ -120,6 +121,7 @@ LJ_collectSetCookies(struct http *hp)
                 sprintf(sp, "%s%s", sp, wp);
                 continue;
 	}
+        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return.  sp= '%s'", sp);
         return(sp);
 }
 
