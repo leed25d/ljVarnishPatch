@@ -111,23 +111,33 @@ LJ_collectSetCookies(struct http *hp)
                         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2) l=%d, h= %s", l, hp->hd[u].b);
 			continue;
                 }
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: \nl=%d\nsc= '%s'\nhdr= '%s'", l, sc, hp->hd[u].b);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: l=%d sc= '%s' hdr= '%s'", l, sc, hp->hd[u].b);
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
 		/**   we have a hit **/
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT");
                 wp= hp->hd[u].b + l + 1;
+                
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wp= %s", wp);
+                
                 /**  skip over whitespace  **/
                 while (vct_issp(*wp))
                         wp++;
                 wpe = strchr(wp, '\0');
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe set ");
+
                 if (wpe <= wp)
                         continue;
 
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe checked ");
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
                 sp= realloc(sp, ct);
 
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT ct= %d", ct);
                 sprintf(sp, "%s%s", sp, wp);
+
+
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT sp= '%s'", sp);
                 continue;
 	}
         VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return.  sp= '%s'", sp);
