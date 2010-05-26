@@ -74,6 +74,7 @@ SVNID("$Id: cache_center.c 4708 2010-04-21 10:36:12Z tfheen $")
 
 #include "shmlog.h"
 #include "vcl.h"
+#include "vct.h"
 #include "cli_priv.h"
 #include "cache.h"
 #include "hash_slinger.h"
@@ -86,9 +87,38 @@ static unsigned xids;
 static char *
 LJ_collectSetCookies(struct http *hp)
 {
-        char *str= strdup("Test Smash cookie string");
-        VSL(SLT_Debug, 0, "Entry: LJ_collectSetCookies");
-        return(str);
+        char *sp= NULL, *wp, *wpe;
+        char *sc= "Set-Cookie:";
+
+        unsigned u, ct;
+        unsigned l= strlen(sc);
+
+	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
+		if (hp->hd[u].b == NULL)
+			continue;
+		Tcheck(hp->hd[u]);
+		if (hp->hd[u].e < hp->hd[u].b + l + 1)
+			continue;
+		if (hp->hd[u].b[l] != ':')
+			continue;
+		if (strncasecmp(sc, hp->hd[u].b, l))
+			continue;
+		/**   we have a hit **/
+                wp= hp->hd[u].b + l + 1;
+                /**  skip over whitespace  **/
+                while (vct_issp(*wp))
+                        wp++;
+                wpe = strchr(wp, '\0');
+                if (wpe <= wp)
+                        continue;
+
+                ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
+                sp= realloc(sp, ct);
+
+                sprintf(sp, "%s%s", sp, wp);
+                continue;
+	}
+        return(sp);
 }
 
 static void
@@ -512,6 +542,8 @@ cnt_fetch(struct sess *sp)
 	sp->wrk->do_esi = 0;
 	sp->wrk->grace = NAN;
 
+        /**************************************************************/
+        /*                  BEGIN LJ HACK                             */
         /*  LEE:: this is where the vcl_fetch routine is called.
          *  construct the X-LJ-SMASHCOOKIE: header here
          */
@@ -520,7 +552,7 @@ cnt_fetch(struct sess *sp)
         if (ljp) {
                 VSL(SLT_Debug, 0, "X-LJ-SMASHCOOKIE string= '%s'", ljp);
         }
-        
+
 	VCL_fetch_method(sp);
 
         /*  LEE:: before doing anything else, delete the X-LJ-COOKIE:
@@ -528,6 +560,8 @@ cnt_fetch(struct sess *sp)
          */
         LJ_removeSmashedCookie(ljp);
         VSL(SLT_Debug, 0, "Remove X-LJ-SMASHCOOKIE:");
+        /*                  END LJ HACK                               */
+        /**************************************************************/
 
 
 	/*
