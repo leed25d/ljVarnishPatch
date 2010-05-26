@@ -95,15 +95,20 @@ LJ_collectSetCookies(struct http *hp)
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: u= %d", u);
-		if (hp->hd[u].b == NULL)
-			continue;
-		Tcheck(hp->hd[u]);
-		if (hp->hd[u].e < hp->hd[u].b + l + 1) {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1).");
+		if (hp->hd[u].b == NULL) {
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0)");
 			continue;
                 }
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0.5)");
+		Tcheck(hp->hd[u]);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(0.75)");
+		if (hp->hd[u].e < hp->hd[u].b + l + 1) {
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1)");
+			continue;
+                }
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1.5)");
 		if (hp->hd[u].b[l] != ':') {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2). c= %s", hp->hd[u].b[l]);
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2) c= %s", hp->hd[u].b[l]);
 			continue;
                 }
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: \nl=%d\nsc= '%s'\nhdr= '%s'", l, sc, hp->hd[u].b);
