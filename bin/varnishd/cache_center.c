@@ -125,6 +125,7 @@ LJ_collectSetCookies(struct http *hp)
                 
                 sprintf(sp, "%s%s%s", sp, strlen(sp) ? "%%" : "", wp);
 	}
+        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: before return '%s'", sp);
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
                 if ((sp= realloc(sp, ct)) != NULL) {
