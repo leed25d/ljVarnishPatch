@@ -88,7 +88,7 @@ static char *
 LJ_collectSetCookies(struct http *hp)
 {
         char *sp= NULL, *wp, *wpe;
-        char *sc= "Set-Cookie:";
+        char *sc= "Set-Cookie";
 
         unsigned u, ct;
         unsigned l= strlen(sc);
@@ -98,10 +98,14 @@ LJ_collectSetCookies(struct http *hp)
 		if (hp->hd[u].b == NULL)
 			continue;
 		Tcheck(hp->hd[u]);
-		if (hp->hd[u].e < hp->hd[u].b + l + 1)
+		if (hp->hd[u].e < hp->hd[u].b + l + 1) {
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1).");
 			continue;
-		if (hp->hd[u].b[l] != ':')
+                }
+		if (hp->hd[u].b[l] != ':') {
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2). c= %s", hp->hd[u].b[l]);
 			continue;
+                }
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: \nl=%d\nsc= '%s'\nhdr= '%s'", l, sc, hp->hd[u].b);
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
