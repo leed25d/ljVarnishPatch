@@ -109,6 +109,7 @@ LJ_collectSetCookies(struct http *hp)
 			continue;
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
+                
 		/**   we have a hit **/
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, l=%d, sc= '%s', hdr= '%s'", u, l, sc, hp->hd[u].b);
                 wp= hp->hd[u].b + l + 1;
@@ -119,18 +120,12 @@ LJ_collectSetCookies(struct http *hp)
                 if (!wpe || (wpe <= wp))
                         continue;
 
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: sp='%s'", sp);
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: c= %d, wp='%s'", strlen(wp), wp);
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: wpe-wp= %d", (wpe-wp));
-               
                 ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? 2 : 0);
                 if ((sp= realloc(sp, ct)) == NULL)
                          continue;
                 
-                sprintf(sp, "%s%s%s", sp, strlen(sp) ? "%%" : "", wp);
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: after concat sp='%s'", sp);
+                sprintf(sp+strlen(sp), "%s%s", strlen(sp) ? "%%" : "", wp);
 	}
-        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: before return '%s'", sp);
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
                 if ((wp= malloc(ct)) != NULL) {
