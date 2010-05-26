@@ -87,11 +87,17 @@ static unsigned xids;
 static char *
 LJ_collectSetCookies(struct http *hp)
 {
-        char *sp= NULL, *wp, *wpe;
+        char *sp= malloc(10), *wp, *wpe;
         char *sc= "Set-Cookie";
 
         unsigned u, ct;
         unsigned l= strlen(sc);
+
+        sp= sp ? "" : sp;
+        if (!sp) {
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: ERRORED OUT:  NULL POINTER");
+                return(sp);
+        }
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: u= %d", u);
@@ -124,12 +130,14 @@ LJ_collectSetCookies(struct http *hp)
                 while (vct_issp(*wp))
                         wp++;
                 wpe = strchr(wp, '\0');
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe set ");
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe set wpe= %d", !!wpe);
 
-                if (wpe <= wp)
+                if (!wpe || (wpe <= wp)) {
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe fucked!");
                         continue;
+                }
 
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe checked ");
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT wpe checked sp= %d", !!sp);
                 ct= strlen(sp) + wpe - wp + 1 + (strlen(sp) ? 2 : 0);
 
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT ct= %d", ct);
