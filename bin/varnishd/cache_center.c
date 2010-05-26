@@ -145,9 +145,9 @@ static void
 LJ_removeSmashedCookie(struct http *hp, char *cp)
 {
         VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed cp= '%s'", cp);
-        //http_Unset(hp, "\x11X-LJ-SMASHCOOKIE:");
+        http_Unset(hp, "\x11X-LJ-SMASHCOOKIE:");
         if (cp) {
-                //free(cp);
+                free(cp);
         }
 }
 
