@@ -131,16 +131,17 @@ LJ_collectSetCookies(struct http *hp)
                         sprintf(sp, "%s%s", cHd, sp);   
                 }
         }
+        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return '%s'", sp);
         return(sp);
 }
 
 static void
 LJ_removeSmashedCookie(struct http *hp, char *cp)
 {
-        VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed");
-        http_Unset(hp, "\x11X-LJ-SMASHCOOKIE:");
+        VSL(SLT_Debug, 0, "Entry: LJ_removeSmashed cp= '%s'", cp);
+        //http_Unset(hp, "\x11X-LJ-SMASHCOOKIE:");
         if (cp) {
-                free(cp);
+                //free(cp);
         }
 }
 
