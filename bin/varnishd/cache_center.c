@@ -108,7 +108,7 @@ LJ_collectSetCookies(struct http *hp)
                 }
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(1.5)");
 		if (hp->hd[u].b[l] != ':') {
-                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2) c= %s", hp->hd[u].b[l]);
+                        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: kicked(2) l=%d, h= %s", l, hp->hd[u].b);
 			continue;
                 }
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: \nl=%d\nsc= '%s'\nhdr= '%s'", l, sc, hp->hd[u].b);
