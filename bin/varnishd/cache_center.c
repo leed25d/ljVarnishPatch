@@ -94,9 +94,11 @@ LJ_collectSetCookies(struct http *hp)
         unsigned l= strlen(sc);
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: u= %d", u);
 		if (hp->hd[u].b == NULL)
 			continue;
 		Tcheck(hp->hd[u]);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: hdr= %s", hp->hd[u].b);
 		if (hp->hd[u].e < hp->hd[u].b + l + 1)
 			continue;
 		if (hp->hd[u].b[l] != ':')
