@@ -87,17 +87,18 @@ static unsigned xids;
 static char *
 LJ_collectSetCookies(struct http *hp)
 {
-        char *sp= malloc(10), *wp, *wpe, *sep;
+        char *sp, *wp, *wpe;
+        char *sep= "!!";
         char *sc= "Set-Cookie";
         char *cHd= "X-LJ-SMASHCOOKIE: ";
 
         unsigned u, ct;
         unsigned l= strlen(sc);
 
-        if (!sp) {
+        if (!(sp= malloc(10))) {   /**  so we can always call realloc() **/
                 return(sp);
         }
-        strcpy(sp, "");
+        sp[0]= '\0';
 
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
 		if (hp->hd[u].b == NULL)
@@ -111,7 +112,7 @@ LJ_collectSetCookies(struct http *hp)
 			continue;
                 
 		/**   we have a hit **/
-                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, l=%d, sc= '%s', hdr= '%s'", u, l, sc, hp->hd[u].b);
+                VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, hdr= '%s'", u, hp->hd[u].b);
                 wp= hp->hd[u].b + l + 1;
                 
                 while (vct_issp(*wp))
@@ -120,25 +121,31 @@ LJ_collectSetCookies(struct http *hp)
                 if (!wpe || (wpe <= wp))
                         continue;
 
-                ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? 2 : 0);
+                ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? strlen(sep) : 0);
                 if ((sp= realloc(sp, ct)) == NULL)
                          continue;
                 
-                sprintf(sp+strlen(sp), "%s%s", strlen(sp) ? "!!" : "", wp);
+                sprintf(sp+strlen(sp), "%s%s", strlen(sp) ? sep : "", wp);
 	}
+        /*  wp is a working pointer.
+
+            Now sp points to the constructed string.  If sp points to
+            a string of non-zero length, allocate a new buffer with
+            sufficient space to hold the X- header and the constructed
+            string.  Put it's address in wp.
+
+            Always free sp, return wp.
+        */ 
+        wp= NULL;
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
                 if ((wp= malloc(ct)) != NULL) {
                         sprintf(wp, "%s%s", cHd, sp);
-                        free(sp);
-                        sp= wp;
-                } else {
-                        free(sp);
-                        sp= NULL;
                 }
         }
-        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return '%s'", sp);
-        return(sp);
+        free(sp);
+        VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: return '%s'", wp ? wp : "");
+        return(wp);
 }
 
 static void
