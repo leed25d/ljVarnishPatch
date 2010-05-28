@@ -100,6 +100,7 @@ LJ_collectSetCookies(struct http *hp)
         }
         sp[0]= '\0';
 
+        /**  loop over all of the headers  **/
 	for (u = HTTP_HDR_FIRST; u < hp->nhd; u++) {
 		if (hp->hd[u].b == NULL)
 			continue;
@@ -110,32 +111,41 @@ LJ_collectSetCookies(struct http *hp)
 			continue;
 		if (strncasecmp(sc, hp->hd[u].b, l))
 			continue;
-                
-		/**   we have a hit **/
+
+                /************************************/
+                /**  found a set-cookie header     **/
                 VSL(SLT_Debug, 0, "Create X-LJ-SMASHCOOKIE: HIT u=%d, hdr= '%s'", u, hp->hd[u].b);
+
+                /**  wp points right after the ':' **/
                 wp= hp->hd[u].b + l + 1;
-                
+                /**  skip whitespace               **/
                 while (vct_issp(*wp))
                         wp++;
+                /**  find the end of the string    **/
                 wpe = strchr(wp, '\0');
                 if (!wpe || (wpe <= wp))
                         continue;
-
+                /**  allocate a buffer             **/
                 ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? strlen(sep) : 0);
                 if ((sp= realloc(sp, ct)) == NULL)
                          continue;
-                
+                /**  concatenate new set-cookie    **/
                 sprintf(sp+strlen(sp), "%s%s", strlen(sp) ? sep : "", wp);
 	}
         /*  wp is a working pointer.
-
-            Now sp points to the constructed string.  If sp points to
-            a string of non-zero length, allocate a new buffer with
-            sufficient space to hold the X- header and the constructed
-            string.  Put it's address in wp.
-
-            Always free sp, return wp.
-        */ 
+        /*
+        /*  Now sp points to the constructed string.  If sp points to
+        /*  a string of non-zero length, allocate a new buffer with
+        /*  sufficient space to hold the X- header and the constructed
+        /*  string.  Put it's address in wp.
+        /*
+        /*  Remember: when we came in to this function, we allocated a
+        /*  buffer 10 bytes long and assigned it's address to sp.
+        /*  That buffer must be freed if we did not build a smash
+        /*  cookie.
+        /*
+        /*  Always free sp, return wp.
+        */
         wp= NULL;
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
