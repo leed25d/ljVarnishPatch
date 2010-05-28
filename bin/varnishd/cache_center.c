@@ -96,7 +96,7 @@ LJ_collectSetCookies(struct http *hp)
         unsigned l= strlen(sc);
 
         if (!(sp= malloc(10))) {   /**  so we can always call realloc() **/
-                return(sp);
+                return(NULL);      /**  wow.  this is fucked up.        **/
         }
         sp[0]= '\0';
 
