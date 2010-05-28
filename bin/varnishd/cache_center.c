@@ -92,7 +92,7 @@ ConcatSetCookies(struct http *hp)
         char *sc= "Set-Cookie";
         char *cHd= "X-SET-COOKIES: ";
 
-        unsigned u, ct;
+        unsigned u, ct, error=0;
         unsigned l= strlen(sc);
 
         if (!(sp= malloc(10))) {   /**  so we can always call realloc() **/
@@ -123,12 +123,16 @@ ConcatSetCookies(struct http *hp)
                         wp++;
                 /**  find the end of the string    **/
                 wpe = strchr(wp, '\0');
-                if (!wpe || (wpe <= wp))
+                if (!wpe || (wpe <= wp)) {
+                        error=1;
                         continue;
+                }
                 /**  allocate a buffer             **/
                 ct= strlen(sp) + (wpe - wp + 1) + (strlen(sp) ? strlen(sep) : 0);
-                if ((sp= realloc(sp, ct)) == NULL)
-                         continue;
+                if ((sp= realloc(sp, ct)) == NULL) {
+                        error=1;
+                        continue;
+                }
                 /**  concatenate new set-cookie    **/
                 sprintf(sp+strlen(sp), "%s%s", strlen(sp) ? sep : "", wp);
 	}
@@ -146,7 +150,13 @@ ConcatSetCookies(struct http *hp)
         /*
         /*  Always free sp, return wp.
         */
+        
         wp= NULL;
+        if (error == 1 && sp) {
+                /**  something went wrong.  vcl_recv() will probably
+                 *  see this and pass **/
+                strcpy(sp, "ERROR");
+        }
         if (sp && strlen(sp)) {
                 ct= strlen(sp) + strlen(cHd) + 1;
                 if ((wp= malloc(ct)) != NULL) {
