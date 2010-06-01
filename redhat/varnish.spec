@@ -1,6 +1,6 @@
 Summary: High-performance HTTP accelerator
 Name: varnish
-Version: 2.1.2-lja
+Version: 2.1.2lja
 Release: 1
 License: BSD
 Group: System Environment/Daemons
