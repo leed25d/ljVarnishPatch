@@ -27,3 +27,8 @@ Set-Cookie headers in the backend response then the X-Set-Cookies
 header will not exist.  After the vcl_fetch() routine runs, the
 X-Set-Cookies header will be removed if it exists.
 
+
+these commands can be useful:
+
+    $ cd varnish-cache
+    $ git archive --format=tar --prefix=varnish-cache/ varnish-2.1.2lja | gzip > ../varnish-2.1.2lja.tar.gz
