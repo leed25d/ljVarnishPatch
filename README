@@ -1,0 +1,29 @@
+This is a copy of varnish-2.1.2el5 that has been patched for use at
+Livejournal.  The relevant code is in 
+    bin/varnishd/cache_center.c
+
+other changes are for version identification.
+
+Just before the vcl_fetch() routine is called, all of the headers are
+examined and the value fields of all of the Set-Cookie headers are
+concatenated together.  The value fields are separated by a known
+separator string, and copied into an header named 'X-Set-Cookies'.
+The X header can be referenced in the vcl_fetch() routine like this
+(for instance):
+
+    vcl_fetch() {
+
+        
+       if (beresp.http.X-Set-Cookies != "error") {
+           ## Remove ljuniq and ljfsads Set-Cookies 
+           set beresp.http.X-Set-Cookies-Sent = beresp.http.X-Set-Cookies;
+       }
+
+    }
+
+If an error arises during the execution of the patch, the
+X-Set-Cookies header will have the value 'error'.  If there are no
+Set-Cookie headers in the backend response then the X-Set-Cookies
+header will not exist.  After the vcl_fetch() routine runs, the
+X-Set-Cookies header will be removed if it exists.
+
