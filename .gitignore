@@ -1,0 +1,39 @@
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+*.o
+*.lo
+*.a
+*.la
+.deps
+.libs
+Makefile
+
+patchWork/*
+
+varnish-cache/bin/varnishadm/varnishadm
+varnish-cache/bin/varnishd/varnishd
+varnish-cache/bin/varnishlog/varnishlog
+varnish-cache/bin/varnishncsa/varnishncsa
+varnish-cache/bin/varnishreplay/varnishreplay
+varnish-cache/bin/varnishtest/varnishtest
+varnish-cache/bin/varnishhist/varnishhist
+varnish-cache/bin/varnishsizes/varnishsizes
+varnish-cache/bin/varnishstat/varnishstat
+varnish-cache/bin/varnishtop/varnishtop
+
+varnish-cache/doc/*.html
+!doc/getting-started.html
+
+varnish-cache/man/default.vcl
+varnish-cache/man/vcl.7
+
+config.h
+config.log
+config.status
+libtool
+stamp-h1
+varnishapi.pc
+ID
