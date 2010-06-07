@@ -51,9 +51,9 @@ of
 
     then, replace the ones that you want to keep by extracting them
     from the X-Set-Cookies header with regsuball(). ie:
-        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep1 regex"); 
-        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep2 regex"); 
-        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "and so forth"); 
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep1 regex"); 
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep2 regex"); 
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "and so forth"); 
 
         
 
