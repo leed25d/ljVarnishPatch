@@ -32,3 +32,70 @@ these commands can be useful:
 
     $ cd varnish-cache
     $ git archive --format=tar --prefix=varnish-cache/ varnish-2.1.2lja | gzip > ../varnish-2.1.2lja.tar.gz
+
+
+========================================================================
+========================================================================
+
+Here is a question and response on the varnish-dev mailing list:
+
+
+
+Well, the 'Set-Cookie' header is unique amongst the headers of an HTTP
+response in the respect that it can occur multiple times.  VCL has no
+facility for looping over these headers and deciding which ones to
+remove and which ones to keep.  With this patch, you have the option
+of
+    First, remove all the Set-Cookie headers like this:
+        remove beresp.http.Set-Cookie;
+
+    then, replace the ones that you want to keep by extracting them
+    from the X-Set-Cookies header with regsuball(). ie:
+        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep1 regex"); 
+        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep2 regex"); 
+        set beresp.http.X-Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "and so forth"); 
+
+        
+
+
+
+--- sky at crucially.net wrote:
+
+From: sky at crucially.net
+To: lee.doolan at volcanomail.com,varnish-dev at varnish-cache.org
+Subject: Re: [PATCH] Concatenate Set-Cookie headers before a call to vcl_fetch()
+Date: Sun, 6 Jun 2010 20:48:34 +0000
+
+Just curious, what is the use case?
+
+Thanks
+Artur
+Sent via BlackBerry by AT&T
+
+-----Original Message-----
+From: "lee doolan" <lee.doolan at volcanomail.com>
+Date: Sat, 5 Jun 2010 23:54:22 
+To: <varnish-dev at varnish-cache.org>
+Subject: [PATCH] Concatenate Set-Cookie headers before a call to vcl_fetch()
+
+
+I have modified a 2.1.2el5 distribution slightly.  
+
+All of the set-cookie headers from a backend response are
+concatenated, with separators between them, and then the resulting
+string is written into a header named x-set-cookies.  This is done
+just before a call to vcl_fetch().  After the call to vcl_fetch(), the
+x-set-cookies header is removed.  The code is here, in github:
+
+     http://github.com/leed25d/ljVarnishPatch
+
+The code may be slightly rough around the edges as I have not done any
+C coding for around 10 years, but the modification works well enough
+to make our system admins pretty happy.
+
+--lee
+
+_______________________________________________
+varnish-dev mailing list
+varnish-dev at varnish-cache.org
+http://lists.varnish-cache.org/mailman/listinfo/varnish-dev
