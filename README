@@ -1,8 +1,44 @@
+
+
 This is a copy of varnish-2.1.2el5 that has been patched for use at
-Livejournal.  The relevant code is in 
+Livejournal.  The relevant code is in
     bin/varnishd/cache_center.c
 
 other changes are for version identification.
+
+
+
+CREDITS
+=======
+
+This patch is the result of a collaborative effort of the Livejournal
+engineering team: Lee Doolan, David Newhall II, Brian Tam and Matt
+West along with independent contractors Lamonr Lucas and John Cook.
+This work was conceived and executed at Livejournal and Livejournal
+paid for it's development.
+
+
+
+DISCLAIMER
+==========
+
+This source code is provided "as is" and without warranties as to
+performance or merchantability. The author and/or distributors of this
+source code may have made statements about this source code. Any such
+statements do not constitute warranties and shall not be relied on by
+the user in deciding whether to use this source code.
+
+This source code is provided without any express or implied warranties
+whatsoever. Because of the diversity of conditions and hardware under
+which this source code may be used, no warranty of fitness for a
+particular purpose is offered. The user is advised to test the source
+code thoroughly before relying on it. The user must assume the entire
+risk of using the source code.
+
+
+
+DESCRIPTION
+===========
 
 Just before the vcl_fetch() routine is called, all of the headers are
 examined and the value fields of all of the Set-Cookie headers are
@@ -13,9 +49,9 @@ The X header can be referenced in the vcl_fetch() routine like this
 
     vcl_fetch() {
 
-        
+
        if (beresp.http.X-Set-Cookies != "error") {
-           ## Remove ljuniq and ljfsads Set-Cookies 
+           ## Remove ljuniq and ljfsads Set-Cookies
            set beresp.http.X-Set-Cookies-Sent = beresp.http.X-Set-Cookies;
        }
 
@@ -23,7 +59,7 @@ The X header can be referenced in the vcl_fetch() routine like this
 
 If an error arises during the execution of the patch, the
 X-Set-Cookies header will have the value 'error'.  If there are no
-Set-Cookie headers in the backend response then the X-Set-Cookies
+Set-Cookie headers in the back-end response then the X-Set-Cookies
 header will not exist.  After the vcl_fetch() routine runs, the
 X-Set-Cookies header will be removed if it exists.
 
@@ -33,6 +69,104 @@ these commands can be useful:
     $ cd varnish-cache
     $ git archive --format=tar --prefix=varnish-cache/ varnish-2.1.2lja | gzip > ../varnish-2.1.2lja.tar.gz
 
+
+========================================================================
+========================================================================
+
+Sometimes a back-end response can contain multiple Set-Cookie headers.
+Since VCL provides no iteration facility, it is not possible to examine
+these headers individually, so in the vcl_fetch() routine, when a
+response is cached it must be cached with all of the Set-Cookie
+headers or with none of them.
+
+This patch forms a string of
+   "s1Value<sep>s1Value<sep>...SnValue"
+
+and assigns it as a value to a header named X-Set-Cookies.  This
+procedure is performed immediately before the call to
+vcl_fetch(). After the call to vcl_fetch(), the X-Set-Cookies header
+is removed from the back-end response.
+
+So, during the execution of vcl_fetch() the programmer has access to
+   beresp.http.X-Set-Cookies
+
+which can be examined, probably with regexeps not to put too fine a
+point on it
+    o  for the presence or absence of a particular cookie
+
+    o  to extract the value of a particular cookie and assign it to
+       another header, probably, but not necessarily, a Set-Cookie
+       header.
+
+In this way, the programmer choose to cache a response that has a
+proper subset of the cookies that were originally returned from the
+back-end.
+
+Here is an example.  Suppose, for the sake of discussion, that the
+back-end returns five Set-Cookie headers like this:
+
+    Set-Cookie: c1=Cookie 1 value;path... yadda yadda
+    Set-Cookie: c2=Cookie 2 value;path... yadda yadda
+    Set-Cookie: c3=Cookie 3 value;path... yadda yadda
+    Set-Cookie: c4=Cookie 4 value;path... yadda yadda
+    Set-Cookie: c5=Cookie 5 value;path... yadda yadda
+
+
+
+Let's further suppose that
+
+    o  when cookie 5 is present, the response should be passed and not
+       cached  otherwise the response can be cached.
+
+
+
+If the response is to be cached:
+
+    o  cookie4 is always removed
+
+    o  cookie3 is never removed.
+
+    o  if both of cookie1 and cookie2 are present then cookie2 should
+       be removed.
+
+    o  cookie 1 alone should be preserved
+
+    o  cookie 2 alone should be preserved
+
+
+
+So now lets see how we would do that:
+
+   /**********
+   /*  first, notice that if something goes sideways during the
+   /*  construction of the X-Set-Cookies header, then it is set to the
+   /*  string 'error'
+   */
+    if (beresp.http.X-Set-Cookies != "error") {
+        if (beresp.http.X-Set-Cookies-Sent ~ "c5=") {
+            return(pass);
+        }
+        /**  remove all cookies and put cookie 3 back  if it exists **/
+        remove beresp.http.Set-Cookie;
+        if (beresp.http.X-Set-Cookies ~ "c3=") {
+            set beresp.http.Set-Cookie = regsub(beresp.http.X-Set-Cookies, ".*(c3=.*)(<<SePaRaT0R>>)?.*", "\1");
+        }
+        /**  if both of c1 and c2 are present, put c1 back and cache  **/
+        if (beresp.http.X-Set-Cookies ~ "c1=" && beresp.http.X-Set-Cookies ~ "c2=") {
+            set beresp.http.Set-Cookie = regsub(beresp.http.X-Set-Cookies, ".*(c1=.*)(<<SePaRaT0R>>)?.*", "\1");
+            return(deliver);
+        }
+        /** cookie 1 alone should be preserved   **/
+        if (beresp.http.X-Set-Cookies ~ "c1=") {
+            set beresp.http.Set-Cookie = regsub(beresp.http.X-Set-Cookies, ".*(c1=.*)(<<SePaRaT0R>>)?.*", "\1");
+        }
+        /** cookie 2 alone should be preserved   **/
+        if (beresp.http.X-Set-Cookies ~ "c2=") {
+            set beresp.http.Set-Cookie = regsub(beresp.http.X-Set-Cookies, ".*(c2=.*)(<<SePaRaT0R>>)?.*", "\1");
+        }
+        return(deliver);
+    }
+    return(pass);
 
 ========================================================================
 ========================================================================
@@ -51,11 +185,11 @@ of
 
     then, replace the ones that you want to keep by extracting them
     from the X-Set-Cookies header with regsuball(). ie:
-        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep1 regex"); 
-        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep2 regex"); 
-        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "and so forth"); 
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep1 regexp");
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "keep2 regexp");
+        set beresp.http.Set-Cookie = regsuball(beresp.http.X-Set-Cookies, "and so forth");
 
-        
+
 
 
 
@@ -74,12 +208,12 @@ Sent via BlackBerry by AT&T
 
 -----Original Message-----
 From: "lee doolan" <lee.doolan at volcanomail.com>
-Date: Sat, 5 Jun 2010 23:54:22 
+Date: Sat, 5 Jun 2010 23:54:22
 To: <varnish-dev at varnish-cache.org>
 Subject: [PATCH] Concatenate Set-Cookie headers before a call to vcl_fetch()
 
 
-I have modified a 2.1.2el5 distribution slightly.  
+I have modified a 2.1.2el5 distribution slightly.
 
 All of the set-cookie headers from a backend response are
 concatenated, with separators between them, and then the resulting
@@ -99,3 +233,6 @@ _______________________________________________
 varnish-dev mailing list
 varnish-dev at varnish-cache.org
 http://lists.varnish-cache.org/mailman/listinfo/varnish-dev
+
+ LocalWords:  Livejournal vcl yadda regsub SePaRaT dev HTTP regsuball ie com
+ LocalWords:  volcanomail org Artur BlackBerry doolan backend github admins
