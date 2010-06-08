@@ -1,7 +1,7 @@
 
 
 This is a copy of varnish-2.1.2el5 that has been patched for use at
-Livejournal.  The relevant code is in
+LiveJournal.  The relevant code is in
     bin/varnishd/cache_center.c
 
 other changes are for version identification.
@@ -11,10 +11,10 @@ other changes are for version identification.
 CREDITS
 =======
 
-This patch is the result of a collaborative effort of the Livejournal
+This patch is the result of a collaborative effort of the LiveJournal
 engineering team: Lee Doolan, David Newhall II, Brian Tam and Matt
 West along with independent contractors Lamont Lucas and John Cook.
-This work was conceived and executed at Livejournal and Livejournal
+This work was conceived and executed at LiveJournal and LiveJournal
 paid for its development.
 
 
@@ -234,5 +234,5 @@ varnish-dev mailing list
 varnish-dev at varnish-cache.org
 http://lists.varnish-cache.org/mailman/listinfo/varnish-dev
 
- LocalWords:  Livejournal vcl yadda regsub SePaRaT dev HTTP regsuball ie com
+ LocalWords:  LiveJournal vcl yadda regsub SePaRaT dev HTTP regsuball ie com
  LocalWords:  volcanomail org Artur BlackBerry doolan backend github admins
