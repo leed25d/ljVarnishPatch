@@ -1,4 +1,4 @@
-
+XS
 
 This is a copy of varnish-2.1.2el5 that has been patched for use at
 LiveJournal.  The relevant code is in
@@ -234,5 +234,6 @@ varnish-dev mailing list
 varnish-dev at varnish-cache.org
 http://lists.varnish-cache.org/mailman/listinfo/varnish-dev
 
- LocalWords:  LiveJournal vcl yadda regsub SePaRaT dev HTTP regsuball ie com
- LocalWords:  volcanomail org Artur BlackBerry doolan backend github admins
+ LocalWords:  LiveJournal vcl yadda regsub SePaRaT dev HTTP regsuball ie com cd
+ LocalWords:  volcanomail org Artur BlackBerry doolan backend github admins sep
+ LocalWords:  Newhall ljuniq ljfsads gzip SnValue regexeps regexp
